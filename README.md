@@ -42,7 +42,7 @@ Now, you can start the web application by running the `ui` command,
 
 Code in examples/devx is full cobra application example, here is the screenshot
 
-![cobra-ui](screenshots.jpg)
+![cobra-ui](/docs/screenshots.jpg)
 
 ## 🤝 Contributing
 
