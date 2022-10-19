@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Alex Xiang">
+    <title>Cobra-UI</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+.panel_left {
+    height: 500px;
+}
+</style>    
+</head>
+<body>
+<div class="container">
+<main>
+    <div class="row pt-5">
+        <div class="form-group col-md-2">
+            <select class="form-select border-0 border-bottom" id="cmd1" name="cmd1" onchange="cmdChanged(0)">
+            </select>
+        </div>
+        <div class="form-group col-md-2">
+            <select class="form-select border-0 border-bottom" id="cmd2" name="cmd2" onchange="cmdChanged(1)">
+            </select>
+        </div>
+        <div class="form-group col-md-2">
+            <select class="form-select border-0 border-bottom" id="cmd3" name="cmd3" onchange="cmdChanged(2)">
+            </select>
+        </div> 
+        <div class="form-group col-md-2">
+            <select class="form-select border-0 border-bottom" id="cmd4" name="cmd4" onchange="cmdChanged(3)">
+            </select>
+        </div> 
+        <div class="form-group col-md-1">
+            <button class="btn btn-primary" id="execBtn" onclick="cmdExecute()">Execute</button>
+        </div>
+    </div>
+    <div class="row pt-3">
+        <div class="col-md-5 border-end panel_left">
+            <span class="row text-primary" id="cmdname" name="cmdname"></span>
+            <span class="row text-black-50 small" id="use" name="use"></span>
+            <div class="row text-black-50 small" id="description" name="description"></div>
+            <div class="row form-group text-info small pt-1">
+                Args: <input class="border-0 border-bottom col-md-10" id="args" name="args">
+            </div>
+            <div class="row form-group text-info small pt-3">
+                <div class="row border-end col-md-1 pe-5">Flags</div>
+                <div class="row col-md-11 ps-3 text-success" id="flags" name="flags">
+                    <form id="flagsForm" name="flagsForm">
+                    </form>                
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7" id="result">
+        </div>
+    </div>
+</main>    
+</div>
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+
+<script>
+var cmdEls = [$('#cmd1'), $('#cmd2'), $('#cmd3'), $('#cmd4')];
+var cmdName = $('#cmdname');
+var argsEl = $('#args');
+var useEl = $('#use');
+var descriptionEl = $('#description');
+var resultEl = $('#result');
+var flagsEl = $('#flags');
+
+function updateCmdName(index) {
+    var cmd = cmdEls[0].val();
+    for(i=1; i<index+1; i++) {
+        if(cmdEls[i].val()) cmd += '.' + cmdEls[i].val();
+    }
+    cmdName.html(cmd);  
+}
+
+var cmdChanged = function(index) {
+    updateCmdName(index);
+    for(i=0; i<cmdEls.length; i++) {
+        cmdEls[i].empty();
+    }
+    $.ajax({
+        url: "/cmdinfo",
+        data: {
+            cmd:cmdName.html()
+        },
+        success: function (data) {
+            var index = 0
+            useEl.html(data.use);
+            descriptionEl.html(data.description);
+            argsInfo = '';
+            if(data.flags) {
+                for(i=0;i<data.flags.length;i++) {
+                    argsInfo += data.flags[i].Name + '(' + data.flags[i].Type + '):'  + data.flags[i].Description + '</br>';
+                }
+            }
+            argsEl.html(argsInfo);
+            for(i=0;i<data.cmds.length;i++) {
+                if(!data.cmds[i]) continue;
+                index = i;       
+                for(j=0;j<data.cmds[i].length;j++) {
+                    var info = data.cmds[i][j];
+                    var cmdEl = $('#cmd'+(i+1));
+                    var op = info.Selected ? '<option value="' + info.Name + '" selected="selected">' + info.Name + '</option>' :
+                        '<option value="' + info.Name + '">' + info.Name + '</option>';
+                    cmdEl.append(op);
+                }
+            }
+            flagsHtml = "";
+            if(data.flags) {
+                for(i=0;i<data.flags.length;i++) {
+                    flagsHtml += '<div class="">' + data.flags[i].Name + '(' + data.flags[i].Description + ')' + '<input class="pt-1 border-0 border-bottom col-md-10" name="' + data.flags[i].Name + '"></div>';
+                }
+            }
+            flagsEl.html(flagsHtml);
+            updateCmdName(index);
+        }
+    });
+};
+
+var cmdExecute = function() {
+    $.ajax({
+        url: "/execute",
+        data: {
+            cmd:cmdName.html(),
+            args:argsEl.val(),
+            flags:$("#flagsForm").serialize()
+        },
+        success: function (data) {
+            console.log(data.result);
+            resultEl.html(data.result);
+        }
+    });
+}
+
+$(document).ready(function(){
+    cmdChanged();
+});
+
+</script>
+</body>
+</html>
