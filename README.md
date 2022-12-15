@@ -15,6 +15,7 @@ import (
 
     ...
 )
+```
 
 and then add cobra-ui command to the root command
 
@@ -25,13 +26,13 @@ rootCmd.AddCommand(cobraui.UICmd)
 and more, you should change your cobra application, add following line to the command to enable it shown on web:
 
 ```go
-	urlEncodeCmd = &cobra.Command{
-		Use:         "urlencode text",
-		Short:       "url encode",
-		Args:        cobra.MinimumNArgs(1),
-		Annotations: cobraui.Options(),  // Add this line
-		Run:         urlencode,
-	}
+urlEncodeCmd = &cobra.Command{
+    Use:         "urlencode text",
+    Short:       "url encode",
+    Args:        cobra.MinimumNArgs(1),
+    Annotations: cobraui.Options(),  // Add this line
+    Run:         urlencode,
+}
 ```
 
 Now, you can start the web application by running the `ui` command,
@@ -40,7 +41,17 @@ Now, you can start the web application by running the `ui` command,
 ./your-cobra-application ui
 ```
 
-Code in examples/devx is full cobra application example, here is the screenshot
+The default ip port is 8189, you can access it via web browser by http://localhost:8189
+
+## Example
+
+Code in examples/devx is a full cobra application example. To run it, just clone the whole project and run:
+
+```sh
+go run ./examples/devx ui
+```
+
+Make sure that you are in go module mode. Here is the screenshot:
 
 ![cobra-ui](/docs/screenshots.jpg)
 
